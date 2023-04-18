@@ -22,23 +22,70 @@ namespace Example.Controllers
         {
 
             if (surname == null){
-                var prescription = _context.Prescriptions
+                /*var prescriptions = _context.Prescriptions
                                 .OrderByDescending(p => p.Date)
-                                .ToList();
-                return Ok(prescription);
-            }
-
-            var prescriptions = _context.Prescriptions
-                                .Where(p => p.IdDoctorNavigation.LastName == surname)
-                                .OrderByDescending(p => p.Date)
-                                .Select( p => new
+                                .Select(p => new
                                 {
                                     IdPerscription = p.IdPrescription,
                                     Date = p.Date,
                                     dueDate = p.DueDate,
                                     DoctorLastName = p.IdPatientNavigation.LastName,
                                     PatientLastName = p.IdPatientNavigation.LastName
-                                });
+                                })
+                                .ToList();*/
+                var prescription = from p in _context.Prescriptions
+                                   from d in _context.Doctors
+                                   from pat in _context.Patients
+                                   where p.IdPatient == pat.IdPatient && p.IdDoctor == d.IdDoctor
+                                   orderby p.Date descending
+                                   select new
+                                   {
+                                       IdPerscription = p.IdPrescription,
+                                       Date = p.Date,
+                                       dueDate = p.DueDate,
+                                       DoctorLastName = d.LastName,
+                                       PatientLastName = pat.LastName
+                                   };
+                return Ok(prescription);
+            }
+
+            /*var prescriptions = _context.Prescriptions
+                                .Where(p => p.IdDoctorNavigation.LastName == surname)
+                                .OrderByDescending(p => p.Date)
+                                .Select(p => new
+                                {
+                                    IdPerscription = p.IdPrescription,
+                                    Date = p.Date,
+                                    dueDate = p.DueDate,
+                                    DoctorLastName = p.IdPatientNavigation.LastName,
+                                    PatientLastName = p.IdPatientNavigation.LastName
+                                });*/
+            /*var prescriptions = _context.Prescriptions
+                            .Include(p => p.IdDoctorNavigation)
+                            .Include(p => p.IdPatientNavigation)
+                            .Where(p => p.IdDoctorNavigation.LastName == surname)
+                            .OrderByDescending(p => p.Date)
+                                .Select(p => new
+                                {
+                                    IdPerscription = p.IdPrescription,
+                                    Date = p.Date,
+                                    dueDate = p.DueDate,
+                                    DoctorLastName = p.IdPatientNavigation.LastName,
+                                    PatientLastName = p.IdPatientNavigation.LastName
+                                });*/
+            var prescriptions = from p in _context.Prescriptions
+                               from d in _context.Doctors
+                               from pat in _context.Patients
+                               where p.IdPatient == pat.IdPatient && p.IdDoctor == d.IdDoctor && d.LastName == surname
+                               orderby p.Date descending
+                               select new
+                               {
+                                   IdPerscription = p.IdPrescription,
+                                   Date = p.Date,
+                                   dueDate = p.DueDate,
+                                   DoctorLastName = d.LastName,
+                                   PatientLastName = pat.LastName
+                               };
 
             return Ok(prescriptions);
         }
